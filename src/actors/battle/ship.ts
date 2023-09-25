@@ -1,9 +1,8 @@
-import {Actor, Engine, SpriteSheet } from "excalibur";
+import {Actor, Engine, SpriteSheet, Vector} from "excalibur";
 import {Colour} from "../../constants";
 import {Images} from "../../resources";
-import {KamiBoom} from "./kami-boom.ts";
 
-type KamiKamiArgs = {
+type ShipArgs = {
     x: number,
     y: number,
     objective: Actor,
@@ -11,7 +10,7 @@ type KamiKamiArgs = {
 }
 
 const spriteSheet = SpriteSheet.fromImageSource({
-    image: Images.kami,
+    image: Images.ship,
     grid: {
         rows: 2,
         columns: 1,
@@ -20,11 +19,11 @@ const spriteSheet = SpriteSheet.fromImageSource({
     }
 });
 
-export class KamiKami extends Actor{
+export class Ship extends Actor{
     private objective: Actor;
     private isEnemy: boolean;
 
-    constructor(args: KamiKamiArgs) {
+    constructor(args: ShipArgs) {
         super({
             ...args,
             width: 6,
@@ -45,12 +44,11 @@ export class KamiKami extends Actor{
 
     // @ts-ignore
     update(engine: Engine, delta: number) {
-        if (this.objective.pos.distance(this.pos) < 5){
-            this.scene.add(new KamiBoom({x: this.pos.x, y: this.pos.y, isEnemy: this.isEnemy}));
-            this.kill();
-        }
+        const VEL = 8;
+        let dir = (new Vector(this.objective.pos.x - this.pos.x, this.objective.pos.y - this.pos.y)).normalize().scaleEqual(delta/VEL);
+        dir = (this.objective.pos.distance(this.pos) >= 20) ? dir : dir.normal();
 
-        const VEL = 10;
-        this.actions.moveTo(this.objective.pos, VEL*delta);
+        this.rotation = dir.toAngle();
+        this.pos = this.pos.add(dir);
     }
 }

@@ -1,5 +1,5 @@
 import {Engine, Keys, Scene} from "excalibur";
-import {Base, CameraAnchorSp, KamiKami} from "../actors";
+import {Base, CameraAnchorSp, Ship} from "../actors";
 
 export class Battle extends Scene{
     private cameraAnchor: CameraAnchorSp = new CameraAnchorSp();
@@ -60,8 +60,8 @@ export class Battle extends Scene{
         }
 
         const now = new Date();
-        if (now.getTime() - this.timeOut.getTime() >= 500){
-            this.add(new KamiKami({
+        if (now.getTime() - this.timeOut.getTime() >= 1500){
+            this.add(new Ship({
                 x: 30,
                 y: drawHeight - 50,
                 objective: this.enemyBase,

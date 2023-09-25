@@ -18,6 +18,6 @@ game.addScene(SceneKey.MENU, new Menu());
 game.addScene(SceneKey.SPACE_VIEW, new SpaceView());
 game.addScene(SceneKey.BATTLE, new Battle());
 
-game.goToScene(SceneKey.MENU);
+game.goToScene(SceneKey.SPACE_VIEW);
 
 await game.start(loader);
