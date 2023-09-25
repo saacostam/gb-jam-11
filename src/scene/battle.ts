@@ -1,5 +1,5 @@
 import {Engine, Keys, Scene} from "excalibur";
-import {Base, CameraAnchorSp, Ship} from "../actors";
+import {Base, CameraAnchorSp, Ship, Wall} from "../actors";
 
 export class Battle extends Scene{
     private cameraAnchor: CameraAnchorSp = new CameraAnchorSp();
@@ -8,6 +8,36 @@ export class Battle extends Scene{
     private enemyBase: Base = new Base({health: 10});
 
     private timeOut: Date = new Date();
+
+    private createBounds(drawWidth: number, drawHeight: number){
+        this.add(new Wall({
+            x: drawWidth,
+            y: -10,
+            width: drawWidth*3,
+            height: 20,
+        }));
+
+        this.add(new Wall({
+            x: (drawWidth*2)+10,
+            y: drawHeight/2,
+            width: 20,
+            height: drawHeight*2,
+        }));
+
+        this.add(new Wall({
+            x: drawWidth,
+            y: drawHeight+10,
+            width: drawWidth*3,
+            height: 20,
+        }));
+
+        this.add(new Wall({
+            x: -10,
+            y: drawHeight/2,
+            width: 20,
+            height: drawHeight*2,
+        }));
+    }
 
     public onInitialize(_engine: Engine) {
         const { drawWidth, drawHeight } = _engine;
@@ -21,14 +51,14 @@ export class Battle extends Scene{
 
         this.myBase = new Base({
             health: 100,
-            x: 30,
-            y: drawHeight - 25,
+            x: 15,
+            y: drawHeight - 15,
         });
 
         this.enemyBase = new Base({
             health: 100,
-            x: drawWidth*2 - 30,
-            y: drawHeight - 25,
+            x: drawWidth*2 - 15,
+            y: drawHeight - 15,
         });
 
         this.add(this.myBase);
@@ -39,6 +69,8 @@ export class Battle extends Scene{
             0.3,
             0.1,
         );
+
+        this.createBounds(drawWidth, drawHeight);
     }
 
     update(engine: Engine, delta: number) {

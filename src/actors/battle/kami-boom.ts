@@ -29,6 +29,7 @@ export class KamiBoom extends Actor{
             width: 6,
             height: 6,
             color: Colour.Red,
+            name: 'kami-boom'
         });
         this.isEnemy = args.isEnemy;
         this.rotation = Math.random() < 0.5 ? 0 : Math.PI/2;

@@ -30,6 +30,7 @@ export class KamiKami extends Actor{
             width: 6,
             height: 6,
             color: Colour.Red,
+            name: 'kami-kami',
         });
         this.objective = args.objective;
         this.isEnemy = args.isEnemy;
