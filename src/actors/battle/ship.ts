@@ -1,19 +1,19 @@
 import {Actor, Engine, SpriteSheet, Vector} from "excalibur";
 import {Colour} from "../../constants";
 import {Images} from "../../resources";
-import {KamiBoom} from "./kami-boom.ts";
+import {Bullet} from "./bullet";
+import {KamiBoom} from "./kami-boom";
 import {Wall} from "./wall";
-import {Base} from "./base";
-import {Ship} from "./ship";
+import {KamiKami} from "./kami-kami";
 
-type KamiKamiArgs = {
+type ShipArgs = {
     x: number,
     y: number,
     isEnemy: boolean,
 }
 
 const spriteSheet = SpriteSheet.fromImageSource({
-    image: Images.kami,
+    image: Images.ship,
     grid: {
         rows: 2,
         columns: 1,
@@ -22,43 +22,41 @@ const spriteSheet = SpriteSheet.fromImageSource({
     }
 });
 
-export class KamiKami extends Actor{
+export class Ship extends Actor{
     private objective?: Actor;
     isEnemy: boolean;
+    private  timeout: Date;
     private objTimeout = new Date();
     askingForObjective: boolean;
 
-    constructor(args: KamiKamiArgs) {
+
+    constructor(args: ShipArgs) {
         super({
             ...args,
             width: 6,
             height: 6,
             color: Colour.Red,
-            name: 'kami-kami',
+            name: 'ship',
         });
         this.isEnemy = args.isEnemy;
+        this.timeout = new Date();
         this.objTimeout = new Date();
         this.askingForObjective = true;
 
         this.on('collisionstart', (e) => {
-            const {other} = e;
+            const {other } = e;
 
-            if (other instanceof Wall){
+            if (
+                other instanceof Wall
+                || other instanceof KamiKami
+                || (other instanceof Bullet && other.isEnemy != this.isEnemy)
+            ){
                 this.kill();
                 this.scene.add(new KamiBoom({
                     x: this.pos.x,
                     y: this.pos.y,
                     isEnemy: this.isEnemy,
-                }));
-            }else if (other instanceof Base || other instanceof KamiKami || other instanceof Ship){
-                if (other.isEnemy !== this.isEnemy){
-                    this.kill();
-                    this.scene.add(new KamiBoom({
-                        x: this.pos.x,
-                        y: this.pos.y,
-                        isEnemy: this.isEnemy,
-                    }));
-                }
+                }))
             }
         })
 
@@ -77,18 +75,24 @@ export class KamiKami extends Actor{
     update(engine: Engine, delta: number) {
         if (!this.objective) return;
 
-        if (this.objective.pos.distance(this.pos) < 10){
-            this.scene.add(new KamiBoom({x: this.pos.x, y: this.pos.y, isEnemy: this.isEnemy}));
-            this.kill();
-        }
-
         const VEL = 8;
         let dir = (new Vector(this.objective.pos.x - this.pos.x, this.objective.pos.y - this.pos.y)).normalize().scaleEqual(delta/VEL);
+        dir = (this.objective.pos.distance(this.pos) >= 20) ? dir : dir.normal();
 
         this.rotation = dir.toAngle();
         this.pos = this.pos.add(dir);
 
+        const DELAY = 1000;
         const now = new Date();
+        if (now.getTime() - this.timeout.getTime() >= DELAY){
+            this.scene.add(new Bullet({
+                x: this.pos.x,
+                y: this.pos.y,
+                dir: dir,
+                isEnemy: this.isEnemy,
+            }))
+            this.timeout = new Date();
+        }
 
         const OBJ_DELAY = 500;
         if (now.getTime() - this.objTimeout.getTime() >= OBJ_DELAY){

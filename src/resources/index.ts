@@ -8,6 +8,7 @@ const Images = {
     planetPointer: new ImageSource('/scenes/space-view/planet-pointer.png'),
     kami: new ImageSource('/scenes/space-view/kami.png'),
     kamiBoom: new ImageSource('/scenes/space-view/kami-boom.png'),
+    ship: new ImageSource('/scenes/space-view/ship.png'),
 }
 
 const Sounds = {
