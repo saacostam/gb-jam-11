@@ -1,13 +1,35 @@
 import {Engine, Keys, Scene} from "excalibur";
-import {Base, CameraAnchorSp, Ship, Wall} from "../actors";
+import {Base, CameraAnchorSp, KamiKami, Ship, Wall} from "../actors";
 
 export class Battle extends Scene{
     private cameraAnchor: CameraAnchorSp = new CameraAnchorSp();
     private activeCameraMovement: boolean = true;
-    private myBase: Base = new Base({health: 10});
-    private enemyBase: Base = new Base({health: 10});
+    private myBase: Base = new Base({health: 10, isEnemy: false});
+    private enemyBase: Base = new Base({health: 10, isEnemy: true});
 
     private timeOut: Date = new Date();
+
+    private findObjective(isEnemy: boolean){
+        let obj: Base | KamiKami | Ship = isEnemy ? this.myBase : this.enemyBase;
+
+        this.actors.forEach(
+            actor => {
+                if (!(actor instanceof Base || actor instanceof KamiKami || actor instanceof Ship)) return;
+                if (
+                    (
+                        isEnemy
+                        ? obj.pos.x < actor.pos.x
+                        : obj.pos.x > actor.pos.x
+                    )
+                    && obj.isEnemy === actor.isEnemy
+                ){
+                    obj = actor;
+                }
+            }
+        )
+
+        return obj;
+    }
 
     private createBounds(drawWidth: number, drawHeight: number){
         this.add(new Wall({
@@ -51,14 +73,16 @@ export class Battle extends Scene{
 
         this.myBase = new Base({
             health: 100,
-            x: 15,
-            y: drawHeight - 15,
+            x: 30,
+            y: drawHeight - 40,
+            isEnemy: false,
         });
 
         this.enemyBase = new Base({
             health: 100,
-            x: drawWidth*2 - 15,
-            y: drawHeight - 15,
+            x: drawWidth*2 - 30,
+            y: drawHeight - 40,
+            isEnemy: true,
         });
 
         this.add(this.myBase);
@@ -91,14 +115,50 @@ export class Battle extends Scene{
             this.cameraAnchor.pos.x = Math.max(Math.min(cameraX, drawWidth*3/2), drawWidth/2);
         }
 
+        const enemyObj = this.findObjective(true);
+        const myObj = this.findObjective(false);
+
+        this.actors.forEach(actor => {
+            if (actor instanceof Ship || actor instanceof KamiKami){
+                if (actor.askingForObjective){
+                    actor.setObjective( actor.isEnemy ? enemyObj : myObj );
+                }
+            }
+        })
+
         const now = new Date();
         if (now.getTime() - this.timeOut.getTime() >= 1500){
-            this.add(new Ship({
-                x: 30,
-                y: drawHeight - 50,
-                objective: this.enemyBase,
-                isEnemy: false,
-            }))
+            for (let i = 0; i < 3*Math.random(); i++){
+                this.add(new Ship({
+                    x: 30,
+                    y: 20 + (drawHeight - 20) * Math.random(),
+                    isEnemy: false,
+                }));
+            }
+
+            for (let i = 0; i < 3*Math.random(); i++){
+                this.add(new Ship({
+                    x: 2*drawWidth - 30,
+                    y: 20 + (drawHeight - 20) * Math.random(),
+                    isEnemy: true,
+                }))
+            }
+
+            for (let i = 0; i < 3*Math.random(); i++){
+                this.add(new KamiKami({
+                    x: 30,
+                    y: 20 + (drawHeight - 20) * Math.random(),
+                    isEnemy: false,
+                }));
+            }
+
+            for (let i = 0; i < 3*Math.random(); i++){
+                this.add(new KamiKami({
+                    x: 2*drawWidth - 30,
+                    y: 20 + (drawHeight - 20) * Math.random(),
+                    isEnemy: true,
+                }))
+            }
 
             this.timeOut = new Date();
         }

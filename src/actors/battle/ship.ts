@@ -2,11 +2,13 @@ import {Actor, Engine, SpriteSheet, Vector} from "excalibur";
 import {Colour} from "../../constants";
 import {Images} from "../../resources";
 import {Bullet} from "./bullet";
+import {KamiBoom} from "./kami-boom";
+import {Wall} from "./wall";
+import {KamiKami} from "./kami-kami";
 
 type ShipArgs = {
     x: number,
     y: number,
-    objective: Actor,
     isEnemy: boolean,
 }
 
@@ -21,9 +23,11 @@ const spriteSheet = SpriteSheet.fromImageSource({
 });
 
 export class Ship extends Actor{
-    private objective: Actor;
-    private isEnemy: boolean;
+    private objective?: Actor;
+    isEnemy: boolean;
     private  timeout: Date;
+    private objTimeout = new Date();
+    askingForObjective: boolean;
 
 
     constructor(args: ShipArgs) {
@@ -34,9 +38,27 @@ export class Ship extends Actor{
             color: Colour.Red,
             name: 'ship',
         });
-        this.objective = args.objective;
         this.isEnemy = args.isEnemy;
         this.timeout = new Date();
+        this.objTimeout = new Date();
+        this.askingForObjective = true;
+
+        this.on('collisionstart', (e) => {
+            const {other } = e;
+
+            if (
+                other instanceof Wall
+                || other instanceof KamiKami
+                || (other instanceof Bullet && other.isEnemy != this.isEnemy)
+            ){
+                this.kill();
+                this.scene.add(new KamiBoom({
+                    x: this.pos.x,
+                    y: this.pos.y,
+                    isEnemy: this.isEnemy,
+                }))
+            }
+        })
 
         const sprite = spriteSheet.getSprite(0, this.isEnemy ? 1: 0);
         if (!sprite) throw new Error('Trying to access a undefined sprite');
@@ -45,10 +67,14 @@ export class Ship extends Actor{
 
     setObjective(newObjective: Actor){
         this.objective = newObjective;
+        this.askingForObjective = false;
+        this.objTimeout = new Date();
     }
 
     // @ts-ignore
     update(engine: Engine, delta: number) {
+        if (!this.objective) return;
+
         const VEL = 8;
         let dir = (new Vector(this.objective.pos.x - this.pos.x, this.objective.pos.y - this.pos.y)).normalize().scaleEqual(delta/VEL);
         dir = (this.objective.pos.distance(this.pos) >= 20) ? dir : dir.normal();
@@ -56,7 +82,7 @@ export class Ship extends Actor{
         this.rotation = dir.toAngle();
         this.pos = this.pos.add(dir);
 
-        const DELAY = 500;
+        const DELAY = 1000;
         const now = new Date();
         if (now.getTime() - this.timeout.getTime() >= DELAY){
             this.scene.add(new Bullet({
@@ -66,6 +92,11 @@ export class Ship extends Actor{
                 isEnemy: this.isEnemy,
             }))
             this.timeout = new Date();
+        }
+
+        const OBJ_DELAY = 1000;
+        if (now.getTime() - this.objTimeout.getTime() >= OBJ_DELAY){
+            this.askingForObjective = true;
         }
     }
 }
