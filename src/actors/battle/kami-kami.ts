@@ -90,7 +90,7 @@ export class KamiKami extends Actor{
 
         const now = new Date();
 
-        const OBJ_DELAY = 1000;
+        const OBJ_DELAY = 500;
         if (now.getTime() - this.objTimeout.getTime() >= OBJ_DELAY){
             this.askingForObjective = true;
         }

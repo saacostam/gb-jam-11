@@ -16,7 +16,7 @@ export class SpaceView extends Scene{
         const { drawWidth, drawHeight } = _engine
         const x = drawWidth/2;
         const y = drawHeight/2;
-        const {planets: inBetweenPlanets, end} = this.getBetweenPlanets(x, y, drawHeight);
+        const {end} = this.getBetweenPlanets(x, y, drawHeight);
 
         this.cameraAnchor = new CameraAnchorSp({
             x: drawWidth/2,
@@ -36,7 +36,7 @@ export class SpaceView extends Scene{
                 y: drawHeight/2,
                 state: PlanetState.RED,
             }),
-            ...inBetweenPlanets,
+            // ...inBetweenPlanets,
             new Planet({
                 x: end.x,
                 y: drawHeight/2,

@@ -101,7 +101,7 @@ export class Battle extends Scene{
         super.update(engine, delta);
 
         const { drawWidth, drawHeight } = engine;
-        const DELTA = delta/10;
+        const DELTA = delta/4;
 
         if (this.activeCameraMovement){
             let cameraX = this.cameraAnchor.pos.x;
